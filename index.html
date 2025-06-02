@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard 2</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script> <!-- Load D3 library -->
+    <title>Weather Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script> <!-- D3 is now available globally as `d3` -->
     <link rel="stylesheet" href="style.css"> <!-- Connect to style.css for styles -->
 </head>
 <body class="vertical-container">
@@ -18,15 +18,27 @@
     <!-- INTERACTIVE WIDGETS -->
     <div class="item horizontal-container">
         <div class="item"><!-- Your widget 1 code goes here. -->
-            <!-- Widget 1 title -->
-            <!-- Widget 1 element -->
+           <div class="widget">
+                <label for="categorySelect">Select city:</label>
+
+                <div class="select-container">
+                    <select id="categorySelect">
+                        <option value="Chicago">Chicago</option>
+                        <option value="Charlotte">Charlotte</option>
+                        <option value="Indianapolis">Indianapolis</option>
+                        <option value="Jacksonville">Jacksonville</option>
+                        <option value="Philadelphia">Philadelphia</option>
+                        <option value="Phoenix">Phoenix</option>
+                    </select>                    
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- CHART(S) -->
     <div class="item chart-container">
-        <h2>[Chart 1 Title]</h2>
-        <svg id="lineChart1" width="900" height="400"></svg> <!-- If you change this ID name, you must change it in main.js too -->
+        <h2>Highest Recorded Temperatures Each Month (2015)</h2>
+        <div id="lineChart1" width="900" height="400"></div> <!-- If you change this ID name, you must change it in main.js too -->
     </div>
     <script src="main.js"></script>
 </body>
