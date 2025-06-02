@@ -27,8 +27,7 @@ d3.csv("data/weather.csv").then(data => {
     const monthOrder = ["January", "February", "March", "April", "May", "June"];
     
     // 3.a: SET SCALES FOR CHART 1
-    const xScale = d3.scalePoint()
-        .domain(monthOrder)
+    const xScale = d3.scaleTime()
         .range([0, width]);
 
     const yScale = d3.scaleLinear()
@@ -38,13 +37,9 @@ d3.csv("data/weather.csv").then(data => {
 
     // 4.a: PLOT DATA FOR CHART 1
     const line = d3.line()
-        .x(d => xScale(d.month))
-        .y(d => yScale(d.temp));
+        .x(d => xScale(new Date(d.date)))
+        .y(d => yScale(d.record_max_temp));
 
-    // 5.a: ADD AXES FOR CHART 1
-    svg1_line.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(xScale));
 
     // Add x-axis label
     svg1_line.append("text")
@@ -60,7 +55,7 @@ d3.csv("data/weather.csv").then(data => {
         .attr("transform", "rotate(-90)")
         .attr("y", -margin.left / 2)
         .attr("x", -height / 2)
-        .text("Record Max Temperature (°F)");
+        .text("Temperature (°F)");
     
     // tooltip interactivity chart 1
     const tooltip = d3.select("body") 
@@ -78,19 +73,9 @@ d3.csv("data/weather.csv").then(data => {
     
     function updateChart(city) {
         const filteredData = data.filter(d => d.city === city && d.year === 2015);
-        const monthlyMaxTemps = Array.from(
-            d3.rollup(filteredData,
-                v => {
-                    const maxEntry = d3.max(v, d => d.record_max_temp);
-                    return v.find(d => d.record_max_temp === maxEntry);
-                },
-                d => d.month
-            ),
-        ([month, d]) => ({ month, temp: d.record_max_temp, date: d.date })
-    );
+        filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        
-        monthlyMaxTemps.sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
+        xScale.domain(d3.extent(filteredData, d => new Date(d.date)));
         
         svg1_line.selectAll(".data-line").remove();
         svg1_line.selectAll(".y-axis").remove();
@@ -98,41 +83,56 @@ d3.csv("data/weather.csv").then(data => {
         svg1_line.selectAll(".data-point").remove();
         svg1_line.selectAll(".hover-circle").remove();
 
+        svg1_line.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%b")))
+
 
         svg1_line.append("path")
-            .datum(monthlyMaxTemps)
+            .datum(filteredData)
             .attr("class", "data-line")
             .attr("fill", "none")
             .attr("stroke", "steelblue")
             .attr("stroke-width", 2)
             .attr("d", line);
 
-        // svg1_line.append("g")
-        //     .attr("class", "y-axis")
-        //     .call(d3.axisLeft(yScale));
+        svg1_line.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0, ${height})`)
+            .call(
+                d3.axisBottom(xScale)
+                .tickFormat(d3.timeFormat("%b"))          
+                .ticks(d3.timeMonth.every(1))            
+        );
+
+        svg1_line.append("g")
+            .attr("class", "y-axis")
+            .call(d3.axisLeft(yScale));
+
+
 
         svg1_line.selectAll(".data-point") 
-            .data(monthlyMaxTemps) 
-            // .data([selectedCategoryData]) // D7: Bind only to category selected by dropdown menu
+            .data(filteredData) 
             .enter()
             .append("circle")
             .attr("class", "data-point")
-            .attr("cx", d => xScale(d.month))
-            .attr("cy", d => yScale(d.temp))
+            .attr("cx", d => xScale(new Date(d.date)))
+            .attr("cy", d => yScale(d.record_max_temp))
             .attr("r", 10)
             .style("fill", "transparent")
             .style("pointer-events", "all")
             .on("mouseover", function(event, d) {
                 tooltip.style("visibility", "visible")
-                    .html(`<strong>Date:</strong> ${d.date} <br><strong>Temp:</strong> ${d.temp}°F`)
+                    .html(`<strong>Date:</strong> ${d.date} <br><strong>Temp:</strong> ${d.record_max_temp}°F`)
                     .style("top", (event.pageY + 10) + "px") // Position relative to pointer
                     .style("left", (event.pageX + 10) + "px");
 
                 // Create the large circle at the hovered point
                 svg1_line.append("circle")
                     .attr("class", "hover-circle")
-                    .attr("cx", xScale(d.month))  // Position based on the xScale (year)
-                    .attr("cy", yScale(d.temp)) // Position based on the yScale (count)
+                    .attr("cx", xScale(new Date(d.date)))
+                    .attr("cy", yScale(d.record_max_temp))
                     .attr("r", 6)  // Radius of the large circle
                     .style("fill", "steelblue") // Circle color
                     .style("stroke-width", 2);
