@@ -33,7 +33,7 @@ d3.csv("data/weather.csv").then(data => {
     const yScale = d3.scaleLinear()
         .range([height, 0]);
     const maxTempAllCities = d3.max(data.filter(d => d.year === 2015), d => d.record_max_temp);
-    yScale.domain([0, maxTempAllCities]);
+    yScale.domain([30, maxTempAllCities]);
 
     // 4.a: PLOT DATA FOR CHART 1
     const line = d3.line()
